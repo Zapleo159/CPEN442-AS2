@@ -1,5 +1,8 @@
+import math
+import os
 import numpy as np
 import random
+import concurrent.futures
 from vigenere import quadgram_fitness
 
 def preproc_plaintext(plaintext): 
@@ -55,9 +58,9 @@ def encrypt(plaintext, key):
     
 def decrypt(ciphertext, key):
     index_arr = [-1, 4, 9, 14, 19, 24]
-    print(len(ciphertext))
-    print(ciphertext)
-    print(key)
+    # print(len(ciphertext))
+    # print(ciphertext)
+    # print(key)
     
     result = [None] * len(ciphertext)
     for iter1 in range(0, len(ciphertext), 2):
@@ -85,38 +88,9 @@ def decrypt(ciphertext, key):
                 result[iter1] = key[i - (i_mod - j_mod)]
                 result[iter1 + 1] = key[j + (i_mod - j_mod)]
     
-    print("".join(result))
+    # print("".join(result))
     return "".join(result).strip()
             
-def crack(ciphertext):
-    max_score = -1
-    best_key = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'
-    key = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'
-    for i in range(100000):
-        if(i % 500 == 0):
-            print(i)
-        result = decrypt(ciphertext, key)
-        score = quadgram_fitness(result)
-        if(score > max_score):
-            max_score = score
-            best_key = key
-            key = shuffleKey(key)
-        else:
-            key = shuffleKey(best_key)
-
-    print(max_score, best_key)
-    return max_score, best_key
-
-
-def calc_similarity(text):
-    dict2 = {}
-    for i in range(len(text)):
-        if(text[i] in dict2):
-            dict2[text[i]] += 1
-        else:
-            dict2[text[i]] = 1
-    return sum(n * (n - 1) for n in dict2.values()) / (len(text) * (len(text) - 1))
-
 def create_5x5_matrix(input_string):
     if len(input_string) != 25:
         raise ValueError("Input string must contain exactly 25 characters.")
@@ -167,3 +141,79 @@ def shuffleKey(key):
     else:
         ch1, ch2 = random.randint(0, 24), random.randint(0, 24)
         return swap_chars(key, ch1, ch2)
+
+max_tick = 500
+def sa_crack(attempts=30000, key='ABCDEFGHIKLMNOPQRSTUVWXYZ', ciphertext='', temperature=0.5, cooling_rate=0.005):
+    current_key = key
+    current_score = quadgram_fitness(decrypt(ciphertext, current_key))
+
+    best_key = current_key
+    best_score = current_score
+    tick = 0
+
+    for _ in range(attempts):
+        candidate_key = shuffleKey(current_key)
+        score = quadgram_fitness(decrypt(ciphertext, candidate_key))
+
+        delta = score - current_score
+        delta_ratio = delta / temperature
+        if abs(delta_ratio) > 100:
+            delta_ratio = math.copysign(100, delta)
+        acceptance_rate = math.exp(delta_ratio)
+        if random.random() < acceptance_rate:
+            current_score = score
+            current_key = candidate_key
+
+            if score > best_score:
+                tick = 0
+                best_score = score
+                best_key = current_key
+                print("Per attempt: " + str(best_score) + " " +  str(best_key))
+            else:
+                tick += 1
+                if tick > max_tick:
+                    tick = 0
+                    score = best_score
+                    current_key = best_key
+
+        temperature *= 1 - cooling_rate
+    print(best_key, decrypt(ciphertext, best_key))
+    return best_key, best_score, temperature
+
+
+def proc_worker(key, ciphertext):
+    best_key = key 
+    best_score = quadgram_fitness(decrypt(ciphertext, best_key))
+    tick = 0
+    temperature = 0.05
+    cooling_rate = 0.005
+
+    while tick < max_tick:
+        key, score, temperature = sa_crack(30000, key, ciphertext, temperature, cooling_rate)
+        print(score, key)
+        if score > best_score:
+            best_score = score
+            best_key = key
+            tick = 0
+            print("Per worker: " + str(best_score) + " " + str(best_key))
+        else:
+            tick += 1
+    return best_score, best_key
+
+def parallel_crack(ciphertext):
+    num_workers = 8
+
+    best_key = shuffleKey('ABCDEFGHIKLMNOPQRSTUVWXYZ')
+    best_score = quadgram_fitness(decrypt(ciphertext, best_key))
+    with concurrent.futures.ProcessPoolExecutor(num_workers) as executor:
+        procs = [executor.submit(proc_worker, shuffleKey(best_key), ciphertext) for _ in range(num_workers)]
+
+        for proc in procs:
+            score, key = proc.result()
+            print(score, key)
+            if score > best_score:
+                best_score = score
+                best_key = key
+        executor.shutdown(wait=True)
+    print(decrypt(ciphertext, best_key))
+    
