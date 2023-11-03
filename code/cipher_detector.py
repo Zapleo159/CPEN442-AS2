@@ -1,5 +1,10 @@
 import vigenere, playfair, substitution
-from twoTimePad import readfile
+
+def readfile(path):
+  file = open(path,'r')
+  data = [line.rstrip('\n') for line in file]
+  file.close()
+  return data
 
 def which_cipher(ciphertext):
     # check if there are no bigrams with repeated letters

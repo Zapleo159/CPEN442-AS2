@@ -1,3 +1,7 @@
+import numpy as np
+import random
+from vigenere import quadgram_fitness
+
 def preproc_plaintext(plaintext): 
     result = []
     processed_plaintext = plaintext.replace('J', 'I')
@@ -84,5 +88,82 @@ def decrypt(ciphertext, key):
     print("".join(result))
     return "".join(result).strip()
             
-def crack():
-    return 0
+def crack(ciphertext):
+    max_score = -1
+    best_key = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'
+    key = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'
+    for i in range(100000):
+        if(i % 500 == 0):
+            print(i)
+        result = decrypt(ciphertext, key)
+        score = quadgram_fitness(result)
+        if(score > max_score):
+            max_score = score
+            best_key = key
+            key = shuffleKey(key)
+        else:
+            key = shuffleKey(best_key)
+
+    print(max_score, best_key)
+    return max_score, best_key
+
+
+def calc_similarity(text):
+    dict2 = {}
+    for i in range(len(text)):
+        if(text[i] in dict2):
+            dict2[text[i]] += 1
+        else:
+            dict2[text[i]] = 1
+    return sum(n * (n - 1) for n in dict2.values()) / (len(text) * (len(text) - 1))
+
+def create_5x5_matrix(input_string):
+    if len(input_string) != 25:
+        raise ValueError("Input string must contain exactly 25 characters.")
+
+    matrix = np.array(list(input_string)).reshape(5, 5)
+    return matrix
+
+def col_swap(key, c1, c2):
+    key_matrix = create_5x5_matrix(key)
+    key_matrix[:, [c1,c2]] = key_matrix[:,[c2,c1]]
+    return ''.join(key_matrix.flatten())
+
+def row_swap(key, r1, r2):
+    key_matrix = create_5x5_matrix(key)
+    key_matrix[[r1,r2], :] = key_matrix[[r2,r1], :]
+    return ''.join(key_matrix.flatten())
+
+def row_flip(key):
+    key_matrix = create_5x5_matrix(key)
+    return "".join(np.flipud(key_matrix).flatten())
+    
+def col_flip(key):
+    key_matrix = create_5x5_matrix(key)
+    return "".join(np.fliplr(key_matrix).flatten())
+
+def swap_chars(key, index1, index2):
+    char_list = list(key)
+    if(len(char_list) > 25):
+        return key
+    else:
+        char_list[index1], char_list[index2] = char_list[index2], char_list[index1]
+        return ''.join(char_list)
+def reverse_string(key):
+    return key[::-1]
+
+def shuffleKey(key):
+    choice = random.randint(0, 100)
+    if(choice in (0,1)):
+        return reverse_string(key)
+    elif(choice in (2,3)):
+        return col_swap(key, random.randint(0,4), random.randint(0,4))
+    elif(choice in (4,5)):
+        return row_swap(key, random.randint(0,4),random.randint(0,4))
+    elif(choice in (6,7)):
+        return col_flip(key)
+    elif(choice in (8,9)):
+        return row_flip(key)
+    else:
+        ch1, ch2 = random.randint(0, 24), random.randint(0, 24)
+        return swap_chars(key, ch1, ch2)
