@@ -1,5 +1,5 @@
 from random import randrange
-import q1
+import letter_data
 
 def vigenere_encrypt(plaintext, key):
     key_length = len(key)    
@@ -8,7 +8,7 @@ def vigenere_encrypt(plaintext, key):
     for i in range(len(plaintext)):
         key_index = i % key_length
         shift = (ord(key[key_index]) + ord(plaintext[i])) % 26
-        result[i] = chr(shift + q1.ascii_conversion)
+        result[i] = chr(shift + letter_data.ascii_conversion)
     
     return "".join(result).strip()
     
@@ -19,7 +19,7 @@ def vigenere_decrypt(ciphertext, key):
     for i in range(len(ciphertext)):
         key_index = i % key_length
         shift = (ord(ciphertext[i]) - ord(key[key_index])) % 26
-        result[i] = chr(shift + q1.ascii_conversion)
+        result[i] = chr(shift + letter_data.ascii_conversion)
     
     return "".join(result).strip()
 
@@ -43,7 +43,7 @@ def crack(ciphertext):
 
     for x in range(key_length):
         K = key        
-        for letter in q1.frequency_map.keys():
+        for letter in letter_data.frequency_map.keys():
             K = key[:x] + letter + key[x+1:]
             pt = vigenere_decrypt(ciphertext, K)
             curr_fit = quadgram_fitness(pt)
