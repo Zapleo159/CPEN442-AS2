@@ -33,7 +33,7 @@ def crack(ciphertext):
             letter_count[char] = letter_count.get(char, 0) + 1
 
         ic = sum(n * (n - 1) for n in letter_count.values()) / (len(ciphertext)/i * (len(ciphertext) - 1)/i)
-        if ic > 0.06:
+        if abs(ic - 0.067) < 0.005:
             key_length = i
             break
     print("Key length: " + str(key_length))

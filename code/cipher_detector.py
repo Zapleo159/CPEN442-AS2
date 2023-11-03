@@ -23,7 +23,7 @@ def which_cipher(ciphertext):
     ic = sum(n * (n - 1) for n in letter_count.values()) / (len(ciphertext) * (len(ciphertext) - 1))
     
     # check if ic is close to english
-    if ic > 0.06:
+    if abs(ic - 0.067) < 0.01:
         print("Substitution")
         substitution.crack(ciphertext)
     else:
@@ -31,6 +31,6 @@ def which_cipher(ciphertext):
         vigenere.crack(ciphertext)
 
 if __name__ == "__main__":
-    ciphertexts = readfile("../q1_ciphertexts_group6.txt")
+    ciphertexts = readfile("q1_ciphertexts_group6.txt")
     for line in ciphertexts:
         which_cipher(line)
