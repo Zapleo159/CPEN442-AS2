@@ -1,5 +1,5 @@
 import re
-import q1
+import code.q1 as q1
 
 
 bigram_map = {
