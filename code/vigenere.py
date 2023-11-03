@@ -39,17 +39,16 @@ def crack(ciphertext):
     print("Key length: " + str(key_length))
 
     key = "A"*key_length
-    fit = 0
-
-    for x in range(key_length):
-        K = key        
+    best_fit = 0
+    for i in range(key_length):
+        curr_key = key        
         for letter in letter_data.frequency_map.keys():
-            K = key[:x] + letter + key[x+1:]
-            pt = vigenere_decrypt(ciphertext, K)
-            curr_fit = quadgram_fitness(pt)
-            if (fit < curr_fit):
-                key = K
-                fit = curr_fit
+            curr_key = key[:i] + letter + key[i+1:]
+            plaintext = vigenere_decrypt(ciphertext, curr_key)
+            curr_fit = quadgram_fitness(plaintext)
+            if (best_fit < curr_fit):
+                key = curr_key
+                best_fit = curr_fit
 
     print(key)
     print(vigenere_decrypt(ciphertext, key))
