@@ -15,9 +15,7 @@ def which_cipher(ciphertext):
             break
     if(flag):
         print("Playfair")
-        # playfair.crack(ciphertext)
-        # playfair.sa_crack(ciphertext)
-        playfair.parallel_crack(ciphertext)
+        # playfair.parallel_crack(ciphertext)
         return 0
 
     # calculate IC
@@ -27,10 +25,10 @@ def which_cipher(ciphertext):
     # check if ic is close to english
     if abs(ic - 0.067) < 0.01:
         print("Substitution")
-        # substitution.crack(ciphertext)
+        substitution.crack(ciphertext)
     else:
         print("Vigenere")
-        # vigenere.crack(ciphertext)
+        vigenere.crack(ciphertext)
 
 if __name__ == "__main__":
     ciphertexts = readfile("q1_ciphertexts_group6.txt")

@@ -1,7 +1,7 @@
 from random import randrange
 import letter_data
 
-def vigenere_encrypt(plaintext, key):
+def encrypt(plaintext, key):
     key_length = len(key)    
             
     result = [None] * len(plaintext)
@@ -12,7 +12,7 @@ def vigenere_encrypt(plaintext, key):
     
     return "".join(result).strip()
     
-def vigenere_decrypt(ciphertext, key):
+def decrypt(ciphertext, key):
     key_length = len(key)    
             
     result = [None] * len(ciphertext)
@@ -44,14 +44,14 @@ def crack(ciphertext):
         curr_key = key        
         for letter in letter_data.frequency_map.keys():
             curr_key = key[:i] + letter + key[i+1:]
-            plaintext = vigenere_decrypt(ciphertext, curr_key)
+            plaintext = decrypt(ciphertext, curr_key)
             curr_score = quadgram_fitness(plaintext)
             if (best_score < curr_score):
                 key = curr_key
                 best_score = curr_score
 
     print(key)
-    print(vigenere_decrypt(ciphertext, key))
+    print(decrypt(ciphertext, key))
 
 # From https://medium.com/analytics-vidhya/how-to-distinguish-between-gibberish-and-valid-english-text-4975078c5688
 def quadgram_fitness(text):
