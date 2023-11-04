@@ -1,4 +1,4 @@
-ascii_conversion = 65;
+ascii_conversion = 65
 
 frequency_map = {
     'A': 0.0804,

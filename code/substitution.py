@@ -1,19 +1,27 @@
 import letter_data
-def encrypt(plaintext, key):
+
+def substitution_encrypt(plaintext, key):
+    print(plaintext)
+    print(key)
+            
     result = []
     for char in plaintext:
         result.append(key[ord(char) - letter_data.ascii_conversion])
         
+    print("".join(result).strip())   
     return "".join(result).strip()
     
-def decrypt(ciphertext, key):
+def substitution_decrypt(ciphertext, key):
+    keymap = {char: index for index, char in enumerate(key)}
+    
+    print(ciphertext)
     print(key)
-    keymap = {index: char for index, char in enumerate(key)}
             
     result = []
     for char in ciphertext:
-        result.append(keymap[ord(char)-letter_data.ascii_conversion])
-  
+        result.append(chr(keymap[char] + letter_data.ascii_conversion))
+        
+    print("".join(result).strip())     
     return "".join(result).strip()
 
 def crack(ciphertext):
@@ -38,8 +46,8 @@ def crack(ciphertext):
     
     freq9 = create_n_gram_map(9, ciphertext)
     print_n_gram_map(freq9)
-
-    letter_map = {
+    
+    cipher_to_plain = {
         "A": 'W',
         "B": 'G',
         "C": 'V',
@@ -55,21 +63,82 @@ def crack(ciphertext):
         "M": 'D',
         "N": 'L',
         "O": 'B',
-        "P": 'Q',
+        "P": None, #Q
         "Q": 'I',
         "R": 'F',
-        "S": 'X',
+        "S": None, #X
         "T": 'Z',
         "U": 'U',
         "V": 'A',
         "W": 'Y',
         "X": 'C',
-        "Y": 'J',
+        "Y": None, #J
         "Z": 'O',
     }
 
-    print(decrypt(ciphertext, "".join(letter_map.values())))
+    plain_to_cipher = {
+        "A": 'V',
+        "B": 'O',
+        "C": 'X',
+        "D": 'M',
+        "E": 'J',
+        "F": 'R',
+        "G": 'B',
+        "H": 'F',
+        "I": 'Q',
+        "J": 'Y',
+        "K": 'L',
+        "L": 'N',
+        "M": 'H',
+        "N": 'D',
+        "O": 'Z',
+        "P": 'I',
+        "Q": 'P',
+        "R": 'G',
+        "S": 'E',
+        "T": 'K',
+        "U": 'U',
+        "V": 'C',
+        "W": 'A',
+        "X": 'S',
+        "Y": 'W', 
+        "Z": 'T',
+    }
+    #key: VOXMJRBFQYLNHDZIPGEKUCASWT
+    print(embed_plain_in_cipher(cipher_to_plain, ciphertext))
+    print('\n')
+    substitution_decrypt(ciphertext, "".join(plain_to_cipher.values()))
 
+def embed_plain_in_cipher(cipher_to_plain, ciphertext, print_with_space=True):
+    """
+    Embeds the plaintext in the ciphertext using the letter map
+    In an easy to read way.
+    """
+    
+    embedded_plaintext = ""
+    last_char_replaced = False
+    
+    for char in ciphertext:
+        if cipher_to_plain.get(char):
+            if print_with_space:
+                if last_char_replaced:
+                    embedded_plaintext += f"{cipher_to_plain[char].lower()}"
+                else:
+                    last_char_replaced = True
+                    embedded_plaintext += f" {cipher_to_plain[char].lower()}"
+            else:
+                embedded_plaintext += f"{cipher_to_plain[char].lower()}"
+        else:
+            if print_with_space:
+                if last_char_replaced:
+                    embedded_plaintext += f" {char}"
+                    last_char_replaced = False
+                else:
+                    embedded_plaintext += f"{char}"
+            else:
+                embedded_plaintext += f"{char}"
+                
+    return embedded_plaintext
 
 def create_n_gram_map(n, text):
     freq = {}
@@ -91,3 +160,14 @@ def print_n_gram_map(freq, printk=0):
         i += 1
         if i == printk:
             break
+        
+def main():
+    file = open('./q1_ciphertexts_group6.txt', 'r')
+    data = [line.rstrip('\n') for line in file]
+    file.close()
+
+    ciphertext = data[2]
+    crack(ciphertext)
+
+if __name__ == "__main__":
+    main()
