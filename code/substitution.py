@@ -1,6 +1,6 @@
 import letter_data
 
-def substitution_encrypt(plaintext, key):
+def encrypt(plaintext, key):
     print(plaintext)
     print(key)
             
@@ -11,7 +11,7 @@ def substitution_encrypt(plaintext, key):
     print("".join(result).strip())   
     return "".join(result).strip()
     
-def substitution_decrypt(ciphertext, key):
+def decrypt(ciphertext, key):
     keymap = {char: index for index, char in enumerate(key)}
     
     print(ciphertext)
@@ -107,7 +107,7 @@ def crack(ciphertext):
     #key: VOXMJRBFQYLNHDZIPGEKUCASWT
     print(embed_plain_in_cipher(cipher_to_plain, ciphertext))
     print('\n')
-    substitution_decrypt(ciphertext, "".join(plain_to_cipher.values()))
+    decrypt(ciphertext, "".join(plain_to_cipher.values()))
 
 def embed_plain_in_cipher(cipher_to_plain, ciphertext, print_with_space=True):
     """
